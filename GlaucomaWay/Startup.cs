@@ -1,3 +1,4 @@
+using GlaucomaWay.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -37,6 +38,8 @@ namespace GlaucomaWay
             string connection = @"Data Source=(localdb)\ProjectsV13;Initial Catalog=GlaucomaWay;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
             services.AddDbContext<GlaucomaDbContext>(options => options.UseSqlServer(connection));
+
+            services.AddScoped<IVf14Service, Vf14Service>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
