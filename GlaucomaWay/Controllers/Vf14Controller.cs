@@ -1,11 +1,8 @@
 ﻿using GlaucomaWay.Models;
-using GlaucomaWay.Services;
+using GlaucomaWay.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,10 +13,10 @@ namespace GlaucomaWay.Controllers
     public class Vf14Controller : ControllerBase
     {
 
-        private readonly IVf14Service _vf14Service;
-        public Vf14Controller(IVf14Service vf14Service)
+        private readonly IVf14Repository _vf14Repository;
+        public Vf14Controller(IVf14Repository vf14Repository)
         {
-            _vf14Service = vf14Service;
+            _vf14Repository = vf14Repository;
         }
 
         [HttpGet("{id}")]
@@ -33,9 +30,29 @@ namespace GlaucomaWay.Controllers
                 return BadRequest();
             }
 
-            var result = await _vf14Service.GetByIdAsync(id, cancellationToken);
+            var result = await _vf14Repository.GetByIdAsync(id, cancellationToken);
 
             return result != null ? Ok(result) : NotFound();
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<int>> CreateAsync([FromBody] Vf14ResultModel resultModel, CancellationToken cancellationToken)
+        {
+            var result = await _vf14Repository.CreateAsync(resultModel, cancellationToken);
+
+            try
+            {
+                await _vf14Repository.SaveAsync(cancellationToken);
+            }
+            catch (DbUpdateException)
+            {
+                //TODO: log exeption
+                return BadRequest();
+            }
+
+            return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Id }, result.Id);
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace GlaucomaWay.Models
 {
     public class Vf14ResultModel
     {
+        [Key]
         public int Id { get; set; }
 
         public int UserId { get; set; }
