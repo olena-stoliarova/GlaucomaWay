@@ -1,12 +1,12 @@
-﻿using GlaucomaWay.Models;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using GlaucomaWay.Models;
 using GlaucomaWay.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GlaucomaWay.Controllers
 {
@@ -14,10 +14,10 @@ namespace GlaucomaWay.Controllers
     [Route("[controller]")]
     public class Vf14Controller : ControllerBase
     {
-
         private readonly IVf14Repository _vf14Repository;
 
         private readonly ILogger<IVf14Repository> _logger;
+
         public Vf14Controller(IVf14Repository vf14Repository, ILogger<IVf14Repository> logger)
         {
             _logger = logger;
