@@ -7,6 +7,6 @@
         Alittle = 2,
         Moderate = 3,
         GreatDeal = 4,
-        UnableTodo = 5
+        UnableToDo = 5
     }
 }

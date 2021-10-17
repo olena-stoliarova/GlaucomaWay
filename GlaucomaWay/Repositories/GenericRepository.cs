@@ -17,7 +17,7 @@ namespace GlaucomaWay.Repositories
         }
 
         public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
-            => await _table.ToListAsync(cancellationToken);
+            => await _table.AsNoTracking().ToListAsync(cancellationToken);
 
         public async Task<TEntity> GetByIdAsync(object id, CancellationToken cancellationToken)
             => await _table.FindAsync(new object[] { id }, cancellationToken);
