@@ -1,14 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace GlaucomaWay.Repositories
 {
-    public class GenericRepository<TEntity> where TEntity : class
+    public class GenericRepository<TEntity>
+        where TEntity : class
     {
-        protected GlaucomaDbContext _context = null;
-        protected DbSet<TEntity> _table = null;
+        private readonly GlaucomaDbContext _context = null;
+        private readonly DbSet<TEntity> _table = null;
 
         public GenericRepository(GlaucomaDbContext context)
         {
