@@ -4,14 +4,16 @@ using GlaucomaWay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GlaucomaWay.Migrations
 {
     [DbContext(typeof(GlaucomaDbContext))]
-    partial class GlaucomaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211011204400_ChangeVfAnswerDataType")]
+    partial class ChangeVfAnswerDataType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,7 +58,7 @@ namespace GlaucomaWay.Migrations
                     b.Property<short>("Q4Score")
                         .HasColumnType("smallint");
 
-                    b.Property<short>("Q5Score")
+                    b.Property<short>("Q51Score")
                         .HasColumnType("smallint");
 
                     b.Property<short>("Q6Score")
