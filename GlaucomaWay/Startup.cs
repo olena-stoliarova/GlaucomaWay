@@ -27,9 +27,7 @@ namespace GlaucomaWay
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "GlaucomaWay", Version = "v1" });
             });
 
-            string connection = @"Data Source=(localdb)\ProjectsV13;Initial Catalog=GlaucomaWay;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-
-            services.AddDbContext<GlaucomaDbContext>(options => options.UseSqlServer(connection));
+            services.AddDbContext<GlaucomaDbContext>(options => options.UseSqlServer(Configuration.GetSection("DbSettings")["ConnectionString"]));
 
             services.AddScoped<IVf14Repository, Vf14Repository>();
         }
