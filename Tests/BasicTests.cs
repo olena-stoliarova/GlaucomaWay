@@ -35,22 +35,41 @@ namespace Tests
         {
             var client = _factory.CreateClient();
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/Vf14");
-            var json = JsonSerializer.Serialize(new Vf14ResultModel
+            using var patientRequest = new HttpRequestMessage(HttpMethod.Post, "/Patient");
+            var jsonPatient = JsonSerializer.Serialize(new PatientCreateOrUpdateModel
             {
-                UserId = 3
+                BithDate = System.DateTime.Today
             });
 
-            using var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
-            request.Content = stringContent;
+            using var stringContentPatient = new StringContent(jsonPatient, Encoding.UTF8, "application/json");
+            patientRequest.Content = stringContentPatient;
+
+            using var createdPatient = await client
+                .SendAsync(patientRequest, HttpCompletionOption.ResponseHeadersRead)
+                .ConfigureAwait(false);
+
+            createdPatient.EnsureSuccessStatusCode();
+
+            var resultPatient = JsonSerializer.Deserialize<int>(await createdPatient.Content.ReadAsStringAsync());
+
+            resultPatient.Should().BeGreaterOrEqualTo(1);
+
+
+            using var VfRequest = new HttpRequestMessage(HttpMethod.Post, "/Vf14");
+            var jsonVf14 = JsonSerializer.Serialize(new Vf14CreateOrUpdateModel
+            {
+                PatientId = resultPatient
+            });
+
+
+            using var stringContent = new StringContent(jsonVf14, Encoding.UTF8, "application/json");
+            VfRequest.Content = stringContent;
 
             using var created = await client
-                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
+                .SendAsync(VfRequest, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
 
             created.EnsureSuccessStatusCode();
-
-            var jsonResult = await created.Content.ReadAsStringAsync();
 
             var result = JsonSerializer.Deserialize<int>(await created.Content.ReadAsStringAsync());
 
@@ -64,7 +83,7 @@ namespace Tests
 
             var gotByIdVf14 = JsonSerializer.Deserialize<Vf14ResultModel>(gotByIdResult, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-            gotByIdVf14.UserId.Should().Be(3);
+            gotByIdVf14.Patient.Id.Should().Be(resultPatient);
         }
     }
 }

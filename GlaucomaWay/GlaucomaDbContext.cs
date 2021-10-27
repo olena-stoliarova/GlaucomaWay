@@ -16,6 +16,8 @@ namespace GlaucomaWay
 
         public DbSet<Vf14ResultModel> Vf14Results { get; set; }
 
+        public DbSet<PatientModel> Patients { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

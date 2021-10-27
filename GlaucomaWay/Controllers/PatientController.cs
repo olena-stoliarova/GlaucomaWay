@@ -12,17 +12,15 @@ namespace GlaucomaWay.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class Vf14Controller : ControllerBase
+    public class PatientController : ControllerBase
     {
-        private readonly IVf14Repository _vf14Repository;
         private readonly IPatientRepository _patientRepository;
 
-        private readonly ILogger<Vf14Controller> _logger;
+        private readonly ILogger<PatientController> _logger;
 
-        public Vf14Controller(IVf14Repository vf14Repository, IPatientRepository patientRepository, ILogger<Vf14Controller> logger)
+        public PatientController(IPatientRepository patientRepository, ILogger<PatientController> logger)
         {
             _logger = logger;
-            _vf14Repository = vf14Repository;
             _patientRepository = patientRepository;
         }
 
@@ -30,14 +28,14 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Vf14ResultModel>> GetByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
+        public async Task<ActionResult<PatientModel>> GetByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
                 return BadRequest();
             }
 
-            var result = await _vf14Repository.GetByIdWithPatientAsync(id, cancellationToken);
+            var result = await _patientRepository.GetByIdAsync(id, cancellationToken);
 
             return result != null ? Ok(result) : NotFound();
         }
@@ -45,9 +43,9 @@ namespace GlaucomaWay.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<List<Vf14ResultModel>>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<ActionResult<List<PatientModel>>> GetAllAsync(CancellationToken cancellationToken)
         {
-            var result = await _vf14Repository.GetAllAsync(cancellationToken);
+            var result = await _patientRepository.GetAllAsync(cancellationToken);
 
             return Ok(result);
         }
@@ -55,18 +53,11 @@ namespace GlaucomaWay.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<int>> CreateAsync([FromBody] Vf14CreateOrUpdateModel resultModel, CancellationToken cancellationToken)
+        public async Task<ActionResult<int>> CreateAsync([FromBody] PatientCreateOrUpdateModel patient, CancellationToken cancellationToken)
         {
             try
             {
-                var patient = await _patientRepository.GetByIdAsync(resultModel.PatientId, cancellationToken);
-                if (patient == null)
-                {
-                    return NotFound(); // TODO: add more detail on what exactly is not found.
-                }
-
-                var result = await _vf14Repository.CreateAsync(resultModel.ToVf14ResultModel(patient), cancellationToken);
-
+                var result = await _patientRepository.CreateAsync(patient.ToPatientModel(), cancellationToken);
                 return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Id }, result.Id);
             }
             catch (DbUpdateException ex)
@@ -87,7 +78,7 @@ namespace GlaucomaWay.Controllers
                 return BadRequest();
             }
 
-            var existing = await _vf14Repository.GetByIdAsync(id, cancellationToken);
+            var existing = await _patientRepository.GetByIdAsync(id, cancellationToken);
 
             if (existing == null)
             {
@@ -96,7 +87,7 @@ namespace GlaucomaWay.Controllers
 
             try
             {
-                await _vf14Repository.DeleteAsync(id, cancellationToken);
+                await _patientRepository.DeleteAsync(id, cancellationToken);
             }
             catch (DbUpdateException ex)
             {
@@ -111,31 +102,25 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> UpdateAsync([FromRoute] int id, [FromBody] Vf14CreateOrUpdateModel resultModel, CancellationToken cancellationToken)
+        public async Task<ActionResult> UpdateAsync([FromRoute] int id, [FromBody] PatientCreateOrUpdateModel resultModel, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
                 return BadRequest();
             }
 
-            var existing = await _vf14Repository.GetByIdAsync(id, cancellationToken);
+            var existing = await _patientRepository.GetByIdAsync(id, cancellationToken);
 
             if (existing == null)
             {
                 return NotFound();
             }
 
-            var patient = await _patientRepository.GetByIdAsync(resultModel.PatientId, cancellationToken);
-            if (patient == null)
-            {
-                return NotFound(); // TODO: add more detail on what exactly is not found.
-            }
-
-            UpdateExistingValues(resultModel.ToVf14ResultModel(patient), existing);
+            UpdateExistingValues(resultModel, existing);
 
             try
             {
-                await _vf14Repository.UpdateAsync(existing, cancellationToken);
+                await _patientRepository.UpdateAsync(existing, cancellationToken);
             }
             catch (DbUpdateException ex)
             {
@@ -146,23 +131,9 @@ namespace GlaucomaWay.Controllers
             return NoContent();
         }
 
-        private static void UpdateExistingValues(Vf14ResultModel newModel, Vf14ResultModel existing)
+        private static void UpdateExistingValues(PatientCreateOrUpdateModel newModel, PatientModel existing)
         {
-            existing.Q1Score = newModel.Q1Score;
-            existing.Q2Score = newModel.Q2Score;
-            existing.Q3Score = newModel.Q3Score;
-            existing.Q4Score = newModel.Q4Score;
-            existing.Q5Score = newModel.Q5Score;
-            existing.Q6Score = newModel.Q6Score;
-            existing.Q7Score = newModel.Q7Score;
-            existing.Q8Score = newModel.Q8Score;
-            existing.Q9Score = newModel.Q9Score;
-            existing.Q10Score = newModel.Q10Score;
-            existing.Q11Score = newModel.Q11Score;
-            existing.Q12Score = newModel.Q12Score;
-            existing.Q13Score = newModel.Q13Score;
-            existing.Q14Score = newModel.Q14Score;
-            existing.Total = newModel.Total;
+            existing.BithDate = newModel.BithDate;
         }
     }
 }
