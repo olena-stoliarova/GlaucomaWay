@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GlaucomaWay</name>
+    </assembly>
+    <members>
+        <member name="P:GlaucomaWay.Models.Vf14CreateOrUpdateModel.Total">
+            <summary>
+            Total test score.
+            </summary>
+            <example>2</example>
+        </member>
+        <member name="P:GlaucomaWay.Models.Vf14CreateOrUpdateModel.PatientId">
+            <summary>
+            Parient Id.
+            </summary>
+            <example>1</example>
+        </member>
+    </members>
+</doc>

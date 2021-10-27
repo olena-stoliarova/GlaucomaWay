@@ -9,14 +9,12 @@ namespace GlaucomaWay.Repositories
     {
         Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken);
 
-        void Delete(object id);
+        Task DeleteAsync(object id, CancellationToken cancellationToken);
 
         Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken);
 
         Task<TEntity> GetByIdAsync(object id, CancellationToken cancellationToken);
 
-        Task SaveAsync(CancellationToken cancellationToken);
-
-        void Update(TEntity obj);
+        Task UpdateAsync(TEntity obj, CancellationToken cancellationToken);
     }
 }

@@ -26,22 +26,22 @@ namespace GlaucomaWay.Repositories
         public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken)
         {
             var result = await _table.AddAsync(entity, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
             return result.Entity;
         }
 
-        public void Update(TEntity obj)
+        public async Task UpdateAsync(TEntity obj, CancellationToken cancellationToken)
         {
             _table.Attach(obj);
             _context.Entry(obj).State = EntityState.Modified;
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public void Delete(object id)
+        public async Task DeleteAsync(object id, CancellationToken cancellationToken)
         {
             TEntity existing = _table.Find(id);
             _table.Remove(existing);
+            await _context.SaveChangesAsync(cancellationToken);
         }
-
-        public async Task SaveAsync(CancellationToken cancellationToken)
-            => await _context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Reflection;
 using GlaucomaWay.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 namespace GlaucomaWay
 {
@@ -18,21 +22,24 @@ namespace GlaucomaWay
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers(options => { options.SuppressAsyncSuffixInActionNames = false; });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "GlaucomaWay", Version = "v1" });
+
+                // Set the comments path for the Swagger JSON and UI.
+                var controllersXmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+                c.IncludeXmlComments(controllersXmlPath, true);
             });
 
             services.AddDbContext<GlaucomaDbContext>(options => options.UseSqlServer(Configuration.GetSection("DbSettings")["ConnectionString"]));
 
             services.AddScoped<IVf14Repository, Vf14Repository>();
+            services.AddScoped<IPatientRepository, PatientRepository>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -41,6 +48,8 @@ namespace GlaucomaWay
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "GlaucomaWay v1"));
             }
+
+            app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
 

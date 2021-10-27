@@ -2,7 +2,7 @@
 
 # SA1309: Field names should not begin with underscore
 dotnet_diagnostic.SA1309.severity = none
-dotnet_diagnostic.SA1600.severity=silent
+dotnet_diagnostic.SA1600.severity=none
 dotnet_diagnostic.SA1601.severity=silent
 dotnet_diagnostic.SA1602.severity=silent
 dotnet_diagnostic.SA1604.severity=silent
@@ -15,4 +15,7 @@ dotnet_diagnostic.SA1200.severity=silent
 dotnet_diagnostic.SA1633.severity=silent
 dotnet_diagnostic.SA1101.severity=silent
 dotnet_diagnostic.SA1413.severity=silent
-dotnet_diagnostic.SA0001.severity=silent
+dotnet_diagnostic.SA0001.severity=none
+
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = none
