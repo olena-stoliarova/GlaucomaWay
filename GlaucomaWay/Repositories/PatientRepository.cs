@@ -1,4 +1,5 @@
 ﻿using GlaucomaWay.Models;
+using GlaucomaWay.Repositories.Interfaces;
 
 namespace GlaucomaWay.Repositories
 {

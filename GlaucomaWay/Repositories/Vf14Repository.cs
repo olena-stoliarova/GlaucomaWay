@@ -1,7 +1,8 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using GlaucomaWay.Models;
-using System.Linq;
+using GlaucomaWay.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace GlaucomaWay.Repositories

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using GlaucomaWay.Models;
 
-namespace GlaucomaWay.Repositories
+namespace GlaucomaWay.Repositories.Interfaces
 {
     public interface IVf14Repository : IGenericRepository<Vf14ResultModel>
     {

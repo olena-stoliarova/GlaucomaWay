@@ -1,7 +1,6 @@
-﻿using GlaucomaWay.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace GlaucomaWay
+namespace GlaucomaWay.Models
 {
     public class GlaucomaDbContext : DbContext
     {

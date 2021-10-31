@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>E:\MyDocuments\NET\GlaucomaWay\GlaucomaWay\GlaucomaWay.xml</DocumentationFile>
+    <DocumentationFile>GlaucomaWay.xml</DocumentationFile>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
 

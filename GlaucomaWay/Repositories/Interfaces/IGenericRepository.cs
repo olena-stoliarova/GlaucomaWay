@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GlaucomaWay.Repositories
+namespace GlaucomaWay.Repositories.Interfaces
 {
     public interface IGenericRepository<TEntity>
         where TEntity : class
