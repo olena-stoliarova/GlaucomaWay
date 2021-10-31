@@ -8,14 +8,14 @@ using System.Net.Http;
 using GlaucomaWay.Models;
 using System.Text;
 
-namespace Tests
+namespace Tests.IntegrationTests
 {
-    public class BasicTests
+    public class Vf14ControllerTests
      : IClassFixture<WebApplicationFactory<GlaucomaWay.Startup>>
     {
         private readonly WebApplicationFactory<GlaucomaWay.Startup> _factory;
 
-        public BasicTests(WebApplicationFactory<GlaucomaWay.Startup> factory)
+        public Vf14ControllerTests(WebApplicationFactory<GlaucomaWay.Startup> factory)
         {
             _factory = factory;
         }

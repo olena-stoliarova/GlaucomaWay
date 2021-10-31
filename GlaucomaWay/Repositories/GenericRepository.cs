@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using GlaucomaWay.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GlaucomaWay.Repositories
