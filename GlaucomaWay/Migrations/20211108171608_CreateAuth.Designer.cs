@@ -4,14 +4,16 @@ using GlaucomaWay.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GlaucomaWay.Migrations
 {
     [DbContext(typeof(GlaucomaDbContext))]
-    partial class GlaucomaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211108171608_CreateAuth")]
+    partial class CreateAuth
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

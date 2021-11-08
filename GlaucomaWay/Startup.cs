@@ -1,15 +1,20 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using GlaucomaWay.Models;
 using GlaucomaWay.Repositories;
 using GlaucomaWay.Repositories.Interfaces;
+using GlaucomaWay.Users;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
@@ -27,6 +32,28 @@ namespace GlaucomaWay
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers(options => { options.SuppressAsyncSuffixInActionNames = false; });
+
+            services.AddDbContext<GlaucomaDbContext>(options => options.UseSqlServer(Configuration.GetSection("DbSettings")["ConnectionString"]));
+
+            services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<GlaucomaDbContext>()
+                .AddDefaultTokenProviders();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+                {
+                    options.SaveToken = true;
+                    options.RequireHttpsMetadata = false;
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+                    };
+                });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "GlaucomaWay", Version = "v1" });
@@ -35,8 +62,6 @@ namespace GlaucomaWay
                 var controllersXmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
                 c.IncludeXmlComments(controllersXmlPath, true);
             });
-
-            services.AddDbContext<GlaucomaDbContext>(options => options.UseSqlServer(Configuration.GetSection("DbSettings")["ConnectionString"]));
 
             services.AddScoped<IVf14Repository, Vf14Repository>();
             services.AddScoped<IPatientRepository, PatientRepository>();
@@ -56,6 +81,8 @@ namespace GlaucomaWay
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GlaucomaWay.Users;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace GlaucomaWay.Models
 {
-    public class GlaucomaDbContext : DbContext
+    public class GlaucomaDbContext : IdentityDbContext<User>
     {
         public GlaucomaDbContext(DbContextOptions<GlaucomaDbContext> options)
             : base(options)
@@ -12,6 +14,8 @@ namespace GlaucomaWay.Models
         public GlaucomaDbContext()
         {
         }
+
+        public new DbSet<User> Users => Set<User>();
 
         public DbSet<Vf14ResultModel> Vf14Results { get; set; }
 
