@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace GlaucomaWay.Models
 {
@@ -104,12 +105,6 @@ namespace GlaucomaWay.Models
         public Vf14Answer Q14Score { get; set; }
 
         /// <summary>
-        /// Total test score.
-        /// </summary>
-        /// <example>2</example>
-        public float Total { get; set; }
-
-        /// <summary>
         /// Parient Id.
         /// </summary>
         /// <example>1</example>
@@ -117,25 +112,43 @@ namespace GlaucomaWay.Models
         public int PatientId { get; set; }
 
         public Vf14ResultModel ToVf14ResultModel(PatientModel patient)
-            => new ()
+            => new()
             {
                 Date = Date,
                 Q1Score = Q1Score,
-                Q2Score = Q1Score,
-                Q3Score = Q1Score,
-                Q4Score = Q1Score,
-                Q5Score = Q1Score,
-                Q6Score = Q1Score,
-                Q7Score = Q1Score,
-                Q8Score = Q1Score,
-                Q9Score = Q1Score,
-                Q10Score = Q1Score,
-                Q11Score = Q1Score,
-                Q12Score = Q1Score,
-                Q13Score = Q1Score,
-                Q14Score = Q1Score,
-                Total = Total,
+                Q2Score = Q2Score,
+                Q3Score = Q3Score,
+                Q4Score = Q4Score,
+                Q5Score = Q5Score,
+                Q6Score = Q6Score,
+                Q7Score = Q7Score,
+                Q8Score = Q8Score,
+                Q9Score = Q9Score,
+                Q10Score = Q10Score,
+                Q11Score = Q11Score,
+                Q12Score = Q12Score,
+                Q13Score = Q13Score,
+                Q14Score = Q14Score,
+                Total = CalculateTotal(),
                 Patient = patient
             };
+
+        private float CalculateTotal()
+        {
+            var scores = new Vf14Answer[] { Q1Score, Q2Score, Q3Score, Q4Score, Q5Score, Q6Score, Q7Score, Q8Score, Q9Score, Q10Score, Q11Score, Q12Score, Q13Score, Q14Score };
+            var x4 = scores.Where(s => s == Vf14Answer.None).Count();
+            var x4F = scores.Where(s => s == Vf14Answer.None).Count() * 4;
+            var x3 = scores.Where(s => s == Vf14Answer.Alittle).Count();
+            var x3F = scores.Where(s => s == Vf14Answer.Alittle).Count() * 3;
+            var x2 = scores.Where(s => s == Vf14Answer.Moderate).Count();
+            var x2F = scores.Where(s => s == Vf14Answer.Moderate).Count() * 2;
+            var x1 = scores.Where(s => s == Vf14Answer.GreatDeal).Count();
+            var x1F = scores.Where(s => s == Vf14Answer.GreatDeal).Count();
+
+            float total = x4 + x3 + x2 + x1;
+            float factored = x4F + x3F + x2F + x1F;
+
+            return total != 0f ? factored / total : 0f;
+        }
     }
 }
