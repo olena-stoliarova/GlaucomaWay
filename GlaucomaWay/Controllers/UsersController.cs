@@ -44,8 +44,8 @@ namespace GlaucomaWay.Controllers
 
             var authClaims = new List<Claim>
             {
-                new(ClaimTypes.Name, user.UserName),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new (ClaimTypes.Name, user.UserName),
+                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
             var userRoles = await _userManager.GetRolesAsync(user);

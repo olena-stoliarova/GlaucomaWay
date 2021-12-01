@@ -48,9 +48,12 @@ namespace GlaucomaWay
                 {
                     options.SaveToken = true;
                     options.RequireHttpsMetadata = false;
+
                     options.TokenValidationParameters = new TokenValidationParameters()
                     {
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"])),
+                        ValidateAudience = false,
+                        ValidateIssuer = false
                     };
                 });
 
@@ -61,6 +64,28 @@ namespace GlaucomaWay
                 // Set the comments path for the Swagger JSON and UI.
                 var controllersXmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
                 c.IncludeXmlComments(controllersXmlPath, true);
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please insert JWT with Bearer into field",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                   {
+                     new OpenApiSecurityScheme
+                     {
+                       Reference = new OpenApiReference
+                       {
+                         Type = ReferenceType.SecurityScheme,
+                         Id = "Bearer"
+                       }
+                     },
+                     Array.Empty<string>()
+                   }
+                });
             });
 
             services.AddScoped<IVf14Repository, Vf14Repository>();
