@@ -17,13 +17,12 @@ namespace GlaucomaWay.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ApiController
+    public class UsersController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
 
         public UsersController(UserManager<User> userManager, IConfiguration configuration)
-            : base(userManager)
         {
             _userManager = userManager;
             _configuration = configuration;

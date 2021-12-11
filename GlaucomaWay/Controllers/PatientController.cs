@@ -22,8 +22,8 @@ namespace GlaucomaWay.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ILogger<PatientController> _logger;
 
-        public PatientController(IPatientRepository patientRepository, UserManager<User> userManager, ILogger<PatientController> logger)
-            : base(userManager)
+        public PatientController(IPatientRepository patientRepository, IHttpContextAccessor httpContextAccessor, UserManager<User> userManager, ILogger<PatientController> logger)
+            : base(userManager, httpContextAccessor)
         {
             _logger = logger;
             _patientRepository = patientRepository;
@@ -44,7 +44,7 @@ namespace GlaucomaWay.Controllers
 
             var result = await _patientRepository.GetByIdAsync(id, cancellationToken);
 
-            if (!HasPermission(result.User))
+            if (!IsAdmin() || !HasPermission(result.User))
             {
                 return Forbid();
             }
@@ -59,6 +59,11 @@ namespace GlaucomaWay.Controllers
         public async Task<ActionResult<List<PatientModel>>> GetAllAsync(CancellationToken cancellationToken)
         {
             var result = await _patientRepository.GetAllAsync(cancellationToken);
+
+            if (!IsAdmin())
+            {
+                return Forbid();
+            }
 
             return Ok(result);
         }
@@ -101,6 +106,11 @@ namespace GlaucomaWay.Controllers
                 return NotFound();
             }
 
+            if (!IsAdmin() || !HasPermission(existing.User))
+            {
+                return Forbid();
+            }
+
             try
             {
                 await _patientRepository.DeleteAsync(id, cancellationToken);
@@ -131,6 +141,11 @@ namespace GlaucomaWay.Controllers
             if (existing == null)
             {
                 return NotFound();
+            }
+
+            if (IsAdmin() || !HasPermission(existing.User))
+            {
+                return Forbid();
             }
 
             UpdateExistingValues(resultModel, existing);

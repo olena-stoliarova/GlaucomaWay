@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GlaucomaWay.Models;
@@ -23,8 +24,8 @@ namespace GlaucomaWay.Controllers
 
         private readonly ILogger<Vf14Controller> _logger;
 
-        public Vf14Controller(IVf14Repository vf14Repository, IPatientRepository patientRepository, UserManager<User> userManager, ILogger<Vf14Controller> logger)
-            : base(userManager)
+        public Vf14Controller(IVf14Repository vf14Repository, IPatientRepository patientRepository, UserManager<User> userManager, IHttpContextAccessor httpContextAccessor, ILogger<Vf14Controller> logger)
+            : base(userManager, httpContextAccessor)
         {
             _logger = logger;
             _vf14Repository = vf14Repository;
@@ -51,7 +52,7 @@ namespace GlaucomaWay.Controllers
                 return NotFound();
             }
 
-            if (!HasPermission(result.Patient.User))
+            if (!IsAdmin() || !HasPermission(result.Patient.User))
             {
                 return Forbid();
             }
@@ -68,7 +69,12 @@ namespace GlaucomaWay.Controllers
             // HttpContext.User.Identity.Name
             var result = await _vf14Repository.GetAllAsync(cancellationToken);
 
-            return Ok(result);
+            if (IsAdmin())
+            {
+                return Ok(result);
+            }
+
+            return Ok(result.Select(r => r.Patient.User.Id == AuthenticatedUser.Id));
         }
 
         [HttpPost]
@@ -83,6 +89,11 @@ namespace GlaucomaWay.Controllers
                 if (patient == null)
                 {
                     return NotFound(); // TODO: add more detail on what exactly is not found.
+                }
+
+                if (!IsAdmin() || !HasPermission(patient.User))
+                {
+                    return Forbid();
                 }
 
                 var result = await _vf14Repository.CreateAsync(resultModel.ToVf14ResultModel(patient), cancellationToken);
@@ -113,6 +124,11 @@ namespace GlaucomaWay.Controllers
             if (existing == null)
             {
                 return NotFound();
+            }
+
+            if (!IsAdmin() || !HasPermission(existing.Patient.User))
+            {
+                return Forbid();
             }
 
             try
@@ -151,6 +167,11 @@ namespace GlaucomaWay.Controllers
             if (patient == null)
             {
                 return NotFound(); // TODO: add more detail on what exactly is not found.
+            }
+
+            if (!IsAdmin() || !HasPermission(existing.Patient.User))
+            {
+                return Forbid();
             }
 
             UpdateExistingValues(resultModel.ToVf14ResultModel(patient), existing);
