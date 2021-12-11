@@ -1,5 +1,9 @@
 using System;
+using GlaucomaWay.Repositories;
+using GlaucomaWay.Users;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
@@ -17,7 +21,24 @@ namespace GlaucomaWay
             try
             {
                 Log.Information("Starting up");
-                CreateHostBuilder(args).Build().Run();
+                var host = CreateHostBuilder(args).Build();
+
+                using (var scope = host.Services.CreateScope())
+                {
+                    var serviceProvider = scope.ServiceProvider;
+                    try
+                    {
+                        var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+                        var roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
+                        DataSeeder.SeedData(userManager, roleManager);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Fatal(ex, ex.Message);
+                    }
+                }
+
+                host.Run();
             }
             catch (Exception ex)
             {

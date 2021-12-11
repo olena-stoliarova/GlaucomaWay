@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GlaucomaWay.Models
 {
-    public class GlaucomaDbContext : IdentityDbContext<User>
+    public class GlaucomaDbContext : IdentityDbContext<User, Role, string>
     {
         public GlaucomaDbContext(DbContextOptions<GlaucomaDbContext> options)
             : base(options)
@@ -16,6 +16,8 @@ namespace GlaucomaWay.Models
         }
 
         public new DbSet<User> Users => Set<User>();
+
+        public new DbSet<Role> Roles { get; set; }
 
         public DbSet<Vf14ResultModel> Vf14Results { get; set; }
 

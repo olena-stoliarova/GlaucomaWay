@@ -44,8 +44,8 @@ namespace GlaucomaWay.Controllers
 
             var authClaims = new List<Claim>
             {
-                new(ClaimTypes.Name, user.UserName),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new (ClaimTypes.Name, user.UserName),
+                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
             var userRoles = await _userManager.GetRolesAsync(user);
@@ -60,8 +60,7 @@ namespace GlaucomaWay.Controllers
             var token = new JwtSecurityToken(
                 expires: DateTime.Now.AddMinutes(30),
                 claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-            );
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
 
             return Ok(new
             {
@@ -102,6 +101,8 @@ namespace GlaucomaWay.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, result.Errors.FirstOrDefault()?.Description);
             }
+
+            await _userManager.AddToRoleAsync(user, Role.User);
 
             return Ok("User created successfully!");
         }

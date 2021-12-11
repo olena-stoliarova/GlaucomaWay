@@ -35,7 +35,7 @@ namespace GlaucomaWay
 
             services.AddDbContext<GlaucomaDbContext>(options => options.UseSqlServer(Configuration.GetSection("DbSettings")["ConnectionString"]));
 
-            services.AddIdentity<User, IdentityRole>()
+            services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<GlaucomaDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -48,12 +48,16 @@ namespace GlaucomaWay
                 {
                     options.SaveToken = true;
                     options.RequireHttpsMetadata = false;
+
                     options.TokenValidationParameters = new TokenValidationParameters()
                     {
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"])),
+                        ValidateAudience = false,
+                        ValidateIssuer = false
                     };
                 });
 
+            services.AddHttpContextAccessor();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "GlaucomaWay", Version = "v1" });
@@ -61,6 +65,28 @@ namespace GlaucomaWay
                 // Set the comments path for the Swagger JSON and UI.
                 var controllersXmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
                 c.IncludeXmlComments(controllersXmlPath, true);
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please insert JWT with Bearer into field",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                   {
+                     new OpenApiSecurityScheme
+                     {
+                       Reference = new OpenApiReference
+                       {
+                         Type = ReferenceType.SecurityScheme,
+                         Id = "Bearer"
+                       }
+                     },
+                     Array.Empty<string>()
+                   }
+                });
             });
 
             services.AddScoped<IVf14Repository, Vf14Repository>();
