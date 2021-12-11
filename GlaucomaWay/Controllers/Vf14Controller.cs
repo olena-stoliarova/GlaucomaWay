@@ -38,6 +38,7 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Vf14ResultModel>> GetByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -47,51 +48,41 @@ namespace GlaucomaWay.Controllers
 
             var result = await _vf14Repository.GetByIdWithPatientAsync(id, cancellationToken);
 
-            if (result == null)
+            return result switch
             {
-                return NotFound();
-            }
-
-            if (!IsAdmin() || !HasPermission(result.Patient.User))
-            {
-                return Forbid();
-            }
-
-            return Ok(result);
+                null => NotFound(),
+                _ => HasPermission(result.Patient.User) ? Ok(result) : Forbid()
+            };
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<List<Vf14ResultModel>>> GetAllAsync(CancellationToken cancellationToken)
         {
-            // HttpContext.User.Identity.Name
-            var result = await _vf14Repository.GetAllAsync(cancellationToken);
+            var result = await _vf14Repository.GetAllWithPatientsAsync(cancellationToken);
 
-            if (IsAdmin())
-            {
-                return Ok(result);
-            }
-
-            return Ok(result.Select(r => r.Patient.User.Id == AuthenticatedUser.Id));
+            return IsAdmin() ? Ok(result) : Ok(result.Where(r => r.Patient.UserId == AuthenticatedUser.Id).ToList());
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<int>> CreateAsync([FromBody] Vf14CreateOrUpdateModel resultModel, CancellationToken cancellationToken)
         {
             try
             {
-                var patient = await _patientRepository.GetByIdAsync(resultModel.PatientId, cancellationToken);
+                var patient = await _patientRepository.GetByIdAsync(int.Parse(AuthenticatedUser.PatientId), cancellationToken);
                 if (patient == null)
                 {
                     return NotFound(); // TODO: add more detail on what exactly is not found.
                 }
 
-                if (!IsAdmin() || !HasPermission(patient.User))
+                if (!HasPermission(patient.User))
                 {
                     return Forbid();
                 }
@@ -112,6 +103,7 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -126,7 +118,8 @@ namespace GlaucomaWay.Controllers
                 return NotFound();
             }
 
-            if (!IsAdmin() || !HasPermission(existing.Patient.User))
+            var patient = await _patientRepository.GetByIdAsync(int.Parse(AuthenticatedUser.PatientId), cancellationToken);
+            if (!HasPermission(patient.User))
             {
                 return Forbid();
             }
@@ -149,6 +142,7 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> UpdateAsync([FromRoute] int id, [FromBody] Vf14CreateOrUpdateModel resultModel, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -163,13 +157,13 @@ namespace GlaucomaWay.Controllers
                 return NotFound();
             }
 
-            var patient = await _patientRepository.GetByIdAsync(resultModel.PatientId, cancellationToken);
+            var patient = await _patientRepository.GetByIdAsync(int.Parse(AuthenticatedUser.PatientId), cancellationToken);
             if (patient == null)
             {
                 return NotFound(); // TODO: add more detail on what exactly is not found.
             }
 
-            if (!IsAdmin() || !HasPermission(existing.Patient.User))
+            if (!HasPermission(patient.User))
             {
                 return Forbid();
             }

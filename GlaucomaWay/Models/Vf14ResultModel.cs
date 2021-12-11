@@ -104,13 +104,6 @@ namespace GlaucomaWay.Models
         [Range(0, 5)]
         public Vf14Answer Q14Score { get; set; }
 
-        /// <summary>
-        /// Parient Id.
-        /// </summary>
-        /// <example>1</example>
-        [Range(1, int.MaxValue)]
-        public int PatientId { get; set; }
-
         public Vf14ResultModel ToVf14ResultModel(PatientModel patient)
             => new ()
             {

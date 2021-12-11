@@ -22,7 +22,7 @@ namespace GlaucomaWay.Controllers
 
         [ApiExplorerSettings(IgnoreApi = true)]
         public bool HasPermission(User user)
-            => AuthenticatedUser.Id == user.Id;
+            => IsAdmin() || AuthenticatedUser.Id == user.Id;
 
         [ApiExplorerSettings(IgnoreApi = true)]
         public bool IsAdmin()
