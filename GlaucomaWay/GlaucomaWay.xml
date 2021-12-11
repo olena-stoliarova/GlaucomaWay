@@ -4,11 +4,5 @@
         <name>GlaucomaWay</name>
     </assembly>
     <members>
-        <member name="P:GlaucomaWay.Models.Vf14CreateOrUpdateModel.PatientId">
-            <summary>
-            Parient Id.
-            </summary>
-            <example>1</example>
-        </member>
     </members>
 </doc>

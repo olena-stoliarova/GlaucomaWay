@@ -35,6 +35,7 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<PatientModel>> GetByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -44,18 +45,18 @@ namespace GlaucomaWay.Controllers
 
             var result = await _patientRepository.GetByIdAsync(id, cancellationToken);
 
-            if (!IsAdmin() || !HasPermission(result.User))
+            return result switch
             {
-                return Forbid();
-            }
-
-            return result != null ? Ok(result) : NotFound();
+                null => NotFound(),
+                _ => HasPermission(result.User) ? Ok(result) : Forbid()
+            };
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<List<PatientModel>>> GetAllAsync(CancellationToken cancellationToken)
         {
             var result = await _patientRepository.GetAllAsync(cancellationToken);
@@ -72,18 +73,20 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<int>> CreateAsync([FromBody] PatientCreateOrUpdateModel patient, CancellationToken cancellationToken)
         {
             try
             {
                 var authenticatedUser = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
                 var result = await _patientRepository.CreateAsync(patient.ToPatientModel(authenticatedUser.Id), cancellationToken);
+
                 return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Id }, result.Id);
             }
             catch (DbUpdateException ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest();
+                return BadRequest(); // TODO: only one patient per user, add error detail
             }
         }
 
@@ -92,6 +95,7 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -106,7 +110,7 @@ namespace GlaucomaWay.Controllers
                 return NotFound();
             }
 
-            if (!IsAdmin() || !HasPermission(existing.User))
+            if (!HasPermission(existing.User))
             {
                 return Forbid();
             }
@@ -129,6 +133,8 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> UpdateAsync([FromRoute] int id, [FromBody] PatientCreateOrUpdateModel resultModel, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -143,7 +149,7 @@ namespace GlaucomaWay.Controllers
                 return NotFound();
             }
 
-            if (IsAdmin() || !HasPermission(existing.User))
+            if (!HasPermission(existing.User))
             {
                 return Forbid();
             }

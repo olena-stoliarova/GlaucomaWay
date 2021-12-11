@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GlaucomaWay.Models;
@@ -22,5 +23,10 @@ namespace GlaucomaWay.Repositories
             .Where(i => i.Id == id)
             .Include(i => i.Patient)
             .FirstOrDefaultAsync(cancellationToken);
+
+        public async Task<List<Vf14ResultModel>> GetAllWithPatientsAsync(CancellationToken cancellationToken)
+           => await _context.Vf14Results
+           .Include(i => i.Patient)
+           .ToListAsync(cancellationToken);
     }
 }

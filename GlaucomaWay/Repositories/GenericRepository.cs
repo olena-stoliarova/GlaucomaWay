@@ -24,7 +24,7 @@ namespace GlaucomaWay.Repositories
         public async Task<TEntity> GetByIdAsync(object id, CancellationToken cancellationToken)
             => await _table.FindAsync(new object[] { id }, cancellationToken);
 
-        public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken)
+        public virtual async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken)
         {
             var result = await _table.AddAsync(entity, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);

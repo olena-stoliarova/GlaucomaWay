@@ -56,10 +56,7 @@ namespace Tests.IntegrationTests
 
 
             using var VfRequest = new HttpRequestMessage(HttpMethod.Post, "/Vf14");
-            var jsonVf14 = JsonSerializer.Serialize(new Vf14CreateOrUpdateModel
-            {
-                PatientId = resultPatient
-            });
+            var jsonVf14 = JsonSerializer.Serialize(new Vf14CreateOrUpdateModel());
 
 
             using var stringContent = new StringContent(jsonVf14, Encoding.UTF8, "application/json");

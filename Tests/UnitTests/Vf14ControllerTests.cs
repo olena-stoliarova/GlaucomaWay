@@ -12,6 +12,7 @@ using System.Threading;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using GlaucomaWay.Users;
+using Microsoft.AspNetCore.Http;
 
 namespace Tests.UnitTests
 {
@@ -21,6 +22,7 @@ namespace Tests.UnitTests
         private readonly Mock<IPatientRepository> _patientRepositoryStub = new();
         private readonly Mock<ILogger<Vf14Controller>> _loggerStub = new();
         private readonly Mock<UserManager<User>> _userManagerStub = new();
+        private readonly Mock<HttpContextAccessor> _HttpContextAccessorStub = new();
 
         private readonly Random _rand = new();
 
@@ -30,7 +32,7 @@ namespace Tests.UnitTests
             _Vf14repositoryStub.Setup(repo => repo.GetByIdWithPatientAsync(It.IsAny<int>(), new CancellationToken()))
                 .ReturnsAsync((Vf14ResultModel)null);
 
-            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _loggerStub.Object);
+            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _HttpContextAccessorStub.Object, _loggerStub.Object);
 
             var result = await controller.GetByIdAsync(_rand.Next(), new CancellationToken());
 
@@ -45,7 +47,7 @@ namespace Tests.UnitTests
             _Vf14repositoryStub.Setup(repo => repo.GetByIdWithPatientAsync(It.IsAny<int>(), new CancellationToken()))
                 .ReturnsAsync(expectedItem);
 
-            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _loggerStub.Object);
+            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _HttpContextAccessorStub.Object, _loggerStub.Object);
 
             var result = await controller.GetByIdAsync(_rand.Next(), new CancellationToken());
 
@@ -60,7 +62,7 @@ namespace Tests.UnitTests
             _Vf14repositoryStub.Setup(repo => repo.GetAllAsync(new CancellationToken()))
                 .ReturnsAsync((List<Vf14ResultModel>)null);
 
-            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _loggerStub.Object);
+            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _HttpContextAccessorStub.Object, _loggerStub.Object);
 
             var result = await controller.GetAllAsync(new CancellationToken());
 
@@ -79,7 +81,7 @@ namespace Tests.UnitTests
             _Vf14repositoryStub.Setup(repo => repo.GetAllAsync(new CancellationToken()))
                 .ReturnsAsync(expectedItems);
 
-            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _loggerStub.Object);
+            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _HttpContextAccessorStub.Object, _loggerStub.Object);
 
             var result = await controller.GetAllAsync(new CancellationToken());
 
@@ -95,7 +97,7 @@ namespace Tests.UnitTests
             _patientRepositoryStub.Setup(repo => repo.GetByIdAsync(It.IsAny<int>(), new CancellationToken()))
                         .ReturnsAsync((PatientModel)null);
 
-            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _loggerStub.Object);
+            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _HttpContextAccessorStub.Object, _loggerStub.Object);
 
             var result = await controller.CreateAsync(CreateRandomVf14CreateOrUpdateModel(_rand.Next()), new CancellationToken());
 
@@ -114,7 +116,7 @@ namespace Tests.UnitTests
              _Vf14repositoryStub.Setup(repo => repo.CreateAsync(It.IsAny<Vf14ResultModel>(), new CancellationToken()))
                 .ReturnsAsync(expectedVf14Result);
 
-            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _loggerStub.Object);
+            var controller = new Vf14Controller(_Vf14repositoryStub.Object, _patientRepositoryStub.Object, _userManagerStub.Object, _HttpContextAccessorStub.Object, _loggerStub.Object);
 
             var result = await controller.CreateAsync(CreateRandomVf14CreateOrUpdateModel(expectedPatient.Id), new CancellationToken());
 
@@ -138,7 +140,6 @@ namespace Tests.UnitTests
         private Vf14CreateOrUpdateModel CreateRandomVf14CreateOrUpdateModel(int patientId) =>
             new()
             {
-                PatientId = patientId,
                 Date = Faker.Identification.DateOfBirth(),
             };
 
