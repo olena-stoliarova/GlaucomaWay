@@ -17,12 +17,13 @@ namespace GlaucomaWay.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController : ApiController
     {
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
 
         public UsersController(UserManager<User> userManager, IConfiguration configuration)
+            : base(userManager)
         {
             _userManager = userManager;
             _configuration = configuration;
@@ -60,8 +61,7 @@ namespace GlaucomaWay.Controllers
             var token = new JwtSecurityToken(
                 expires: DateTime.Now.AddMinutes(30),
                 claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-            );
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
 
             return Ok(new
             {
@@ -102,6 +102,8 @@ namespace GlaucomaWay.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, result.Errors.FirstOrDefault()?.Description);
             }
+
+            await _userManager.AddToRoleAsync(user, Role.User);
 
             return Ok("User created successfully!");
         }

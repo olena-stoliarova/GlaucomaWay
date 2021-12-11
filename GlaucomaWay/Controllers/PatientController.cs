@@ -2,9 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using GlaucomaWay.Models;
-using GlaucomaWay.Repositories;
 using GlaucomaWay.Repositories.Interfaces;
+using GlaucomaWay.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,23 +14,27 @@ using Microsoft.Extensions.Logging;
 namespace GlaucomaWay.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
-    public class PatientController : ControllerBase
+    public class PatientController : ApiController
     {
         private readonly IPatientRepository _patientRepository;
-
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<PatientController> _logger;
 
-        public PatientController(IPatientRepository patientRepository, ILogger<PatientController> logger)
+        public PatientController(IPatientRepository patientRepository, UserManager<User> userManager, ILogger<PatientController> logger)
+            : base(userManager)
         {
             _logger = logger;
             _patientRepository = patientRepository;
+            _userManager = userManager;
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<PatientModel>> GetByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -38,12 +44,18 @@ namespace GlaucomaWay.Controllers
 
             var result = await _patientRepository.GetByIdAsync(id, cancellationToken);
 
+            if (!HasPermission(result.User))
+            {
+                return Forbid();
+            }
+
             return result != null ? Ok(result) : NotFound();
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<List<PatientModel>>> GetAllAsync(CancellationToken cancellationToken)
         {
             var result = await _patientRepository.GetAllAsync(cancellationToken);
@@ -54,11 +66,13 @@ namespace GlaucomaWay.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<int>> CreateAsync([FromBody] PatientCreateOrUpdateModel patient, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _patientRepository.CreateAsync(patient.ToPatientModel(), cancellationToken);
+                var authenticatedUser = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+                var result = await _patientRepository.CreateAsync(patient.ToPatientModel(authenticatedUser.Id), cancellationToken);
                 return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Id }, result.Id);
             }
             catch (DbUpdateException ex)
@@ -72,6 +86,7 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -103,6 +118,7 @@ namespace GlaucomaWay.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> UpdateAsync([FromRoute] int id, [FromBody] PatientCreateOrUpdateModel resultModel, CancellationToken cancellationToken)
         {
             if (id <= 0)

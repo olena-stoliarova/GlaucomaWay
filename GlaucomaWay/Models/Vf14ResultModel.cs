@@ -112,7 +112,7 @@ namespace GlaucomaWay.Models
         public int PatientId { get; set; }
 
         public Vf14ResultModel ToVf14ResultModel(PatientModel patient)
-            => new()
+            => new ()
             {
                 Date = Date,
                 Q1Score = Q1Score,

@@ -35,7 +35,7 @@ namespace GlaucomaWay
 
             services.AddDbContext<GlaucomaDbContext>(options => options.UseSqlServer(Configuration.GetSection("DbSettings")["ConnectionString"]));
 
-            services.AddIdentity<User, IdentityRole>()
+            services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<GlaucomaDbContext>()
                 .AddDefaultTokenProviders();
 
