@@ -25,7 +25,7 @@ namespace GlaucomaWay.Models
 
         [NotMapped]
         public int Age
-            => (int)(DateTime.Now - BithDate).TotalDays / 365;
+            => Math.Abs((int)(DateTime.Now - BithDate).TotalDays) / 365;
     }
 
     public class PatientCreateOrUpdateModel
