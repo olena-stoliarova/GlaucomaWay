@@ -13,98 +13,97 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace GlaucomaWay.Controllers
+namespace GlaucomaWay.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class UsersController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
+    private readonly UserManager<User> _userManager;
+    private readonly IConfiguration _configuration;
+
+    public UsersController(UserManager<User> userManager, IConfiguration configuration)
     {
-        private readonly UserManager<User> _userManager;
-        private readonly IConfiguration _configuration;
+        _userManager = userManager;
+        _configuration = configuration;
+    }
 
-        public UsersController(UserManager<User> userManager, IConfiguration configuration)
+    [HttpPost]
+    [Route("login")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> Login([FromBody] LoginModel model)
+    {
+        var user = await _userManager.FindByNameAsync(model.Username);
+
+        if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
         {
-            _userManager = userManager;
-            _configuration = configuration;
+            return Unauthorized();
         }
 
-        [HttpPost]
-        [Route("login")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> Login([FromBody] LoginModel model)
+        var authClaims = new List<Claim>
         {
-            var user = await _userManager.FindByNameAsync(model.Username);
+            new (ClaimTypes.Name, user.UserName),
+            new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
 
-            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-            {
-                return Unauthorized();
-            }
+        var userRoles = await _userManager.GetRolesAsync(user);
 
-            var authClaims = new List<Claim>
-            {
-                new (ClaimTypes.Name, user.UserName),
-                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-
-            foreach (var userRole in userRoles)
-            {
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-            }
-
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
-            var token = new JwtSecurityToken(
-                expires: DateTime.Now.AddMinutes(30),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
-
-            return Ok(new
-            {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                expiration = token.ValidTo
-            });
+        foreach (var userRole in userRoles)
+        {
+            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
         }
 
-        [HttpPost]
-        [Route("register")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+
+        var token = new JwtSecurityToken(
+            expires: DateTime.Now.AddMinutes(30),
+            claims: authClaims,
+            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
+
+        return Ok(new
         {
-            var userByNameExists = await _userManager.FindByNameAsync(model.Username);
-            if (userByNameExists != null)
-            {
-                return BadRequest("User with given name already exists");
-            }
+            token = new JwtSecurityTokenHandler().WriteToken(token),
+            expiration = token.ValidTo
+        });
+    }
 
-            var userByEmailExists = await _userManager.FindByEmailAsync(model.Email);
-            if (userByEmailExists != null)
-            {
-                return BadRequest("User with given email already exists");
-            }
-
-            var user = new User()
-            {
-                Email = model.Email,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
-            };
-
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (!result.Succeeded)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, result.Errors.FirstOrDefault()?.Description);
-            }
-
-            await _userManager.AddToRoleAsync(user, Role.User);
-
-            return Ok("User created successfully!");
+    [HttpPost]
+    [Route("register")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register([FromBody] RegisterModel model)
+    {
+        var userByNameExists = await _userManager.FindByNameAsync(model.Username);
+        if (userByNameExists != null)
+        {
+            return BadRequest("User with given name already exists");
         }
+
+        var userByEmailExists = await _userManager.FindByEmailAsync(model.Email);
+        if (userByEmailExists != null)
+        {
+            return BadRequest("User with given email already exists");
+        }
+
+        var user = new User()
+        {
+            Email = model.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = model.Username
+        };
+
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        if (!result.Succeeded)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, result.Errors.FirstOrDefault()?.Description);
+        }
+
+        await _userManager.AddToRoleAsync(user, Role.User);
+
+        return Ok("User created successfully!");
     }
 }

@@ -7,54 +7,53 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace GlaucomaWay
+namespace GlaucomaWay;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        Log.Logger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .WriteTo.Debug()
+            .CreateLogger();
+
+        try
         {
-            Log.Logger = new LoggerConfiguration()
-               .Enrich.FromLogContext()
-               .WriteTo.Debug()
-               .CreateLogger();
+            Log.Information("Starting up");
+            var host = CreateHostBuilder(args).Build();
 
-            try
+            using (var scope = host.Services.CreateScope())
             {
-                Log.Information("Starting up");
-                var host = CreateHostBuilder(args).Build();
-
-                using (var scope = host.Services.CreateScope())
+                var serviceProvider = scope.ServiceProvider;
+                try
                 {
-                    var serviceProvider = scope.ServiceProvider;
-                    try
-                    {
-                        var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-                        var roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
-                        DataSeeder.SeedData(userManager, roleManager);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Fatal(ex, ex.Message);
-                    }
+                    var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+                    var roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
+                    DataSeeder.SeedData(userManager, roleManager);
                 }
-
-                host.Run();
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Application start-up failed");
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+                catch (Exception ex)
                 {
-                    webBuilder.UseStartup<Startup>();
-                }).UseSerilog();
+                    Log.Fatal(ex, ex.Message);
+                }
+            }
+
+            host.Run();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application start-up failed");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            }).UseSerilog();
 }

@@ -11,167 +11,179 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace GlaucomaWay.Controllers
+namespace GlaucomaWay.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("[controller]")]
+public class PatientController : ApiController
 {
-    [ApiController]
-    [Authorize]
-    [Route("[controller]")]
-    public class PatientController : ApiController
+    private readonly IPatientRepository _patientRepository;
+    private readonly UserManager<User> _userManager;
+    private readonly ILogger<PatientController> _logger;
+
+    public PatientController(IPatientRepository patientRepository, IHttpContextAccessor httpContextAccessor,
+        UserManager<User> userManager, ILogger<PatientController> logger)
+        : base(userManager, httpContextAccessor)
     {
-        private readonly IPatientRepository _patientRepository;
-        private readonly UserManager<User> _userManager;
-        private readonly ILogger<PatientController> _logger;
+        _logger = logger;
+        _patientRepository = patientRepository;
+        _userManager = userManager;
+    }
 
-        public PatientController(IPatientRepository patientRepository, IHttpContextAccessor httpContextAccessor, UserManager<User> userManager, ILogger<PatientController> logger)
-            : base(userManager, httpContextAccessor)
+    [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PatientModel>> GetByIdAsync([FromRoute] int id,
+        CancellationToken cancellationToken)
+    {
+        if (id <= 0)
         {
-            _logger = logger;
-            _patientRepository = patientRepository;
-            _userManager = userManager;
+            return BadRequest();
         }
 
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<PatientModel>> GetByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
+        var result = await _patientRepository.GetByIdAsync(id, cancellationToken);
+
+        return result switch
         {
-            if (id <= 0)
-            {
-                return BadRequest();
-            }
+            null => NotFound(),
+            _ => HasPermission(result.User) ? Ok(result) : Forbid()
+        };
+    }
 
-            var result = await _patientRepository.GetByIdAsync(id, cancellationToken);
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<List<PatientModel>>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var result = await _patientRepository.GetAllAsync(cancellationToken);
 
-            return result switch
-            {
-                null => NotFound(),
-                _ => HasPermission(result.User) ? Ok(result) : Forbid()
-            };
+        if (!IsAdmin())
+        {
+            return Forbid();
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<List<PatientModel>>> GetAllAsync(CancellationToken cancellationToken)
+        return Ok(result);
+    }
+
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<int>> CreateAsync([FromBody] PatientCreateOrUpdateModel patient,
+        CancellationToken cancellationToken)
+    {
+        try
         {
-            var result = await _patientRepository.GetAllAsync(cancellationToken);
+            var authenticatedUser = await _userManager.FindByNameAsync(HttpContext.User.Identity?.Name);
+            var result = await _patientRepository.CreateAsync(
+                patient.ToPatientModel(authenticatedUser.Id),
+                cancellationToken);
 
-            if (!IsAdmin())
-            {
-                return Forbid();
-            }
+            return CreatedAtAction(nameof(GetByIdAsync), new {id = result.Id}, result.Id);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex.Message);
+            return BadRequest(); // TODO: only one patient per user, add error detail
+        }
+    }
 
-            return Ok(result);
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
+    {
+        if (id <= 0)
+        {
+            return BadRequest();
         }
 
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<int>> CreateAsync([FromBody] PatientCreateOrUpdateModel patient, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var authenticatedUser = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-                var result = await _patientRepository.CreateAsync(patient.ToPatientModel(authenticatedUser.Id), cancellationToken);
+        var existing = await _patientRepository.GetByIdAsync(id, cancellationToken);
 
-                return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Id }, result.Id);
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex.Message);
-                return BadRequest(); // TODO: only one patient per user, add error detail
-            }
+        if (existing == null)
+        {
+            return NotFound();
         }
 
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
+        if (!HasPermission(existing.User))
         {
-            if (id <= 0)
-            {
-                return BadRequest();
-            }
-
-            var existing = await _patientRepository.GetByIdAsync(id, cancellationToken);
-
-            if (existing == null)
-            {
-                return NotFound();
-            }
-
-            if (!HasPermission(existing.User))
-            {
-                return Forbid();
-            }
-
-            try
-            {
-                await _patientRepository.DeleteAsync(id, cancellationToken);
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex.Message);
-                return BadRequest();
-            }
-
-            return NoContent();
+            return Forbid();
         }
 
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult> UpdateAsync([FromRoute] int id, [FromBody] PatientCreateOrUpdateModel resultModel, CancellationToken cancellationToken)
+        try
         {
-            if (id <= 0)
-            {
-                return BadRequest();
-            }
-
-            var existing = await _patientRepository.GetByIdAsync(id, cancellationToken);
-
-            if (existing == null)
-            {
-                return NotFound();
-            }
-
-            if (!HasPermission(existing.User))
-            {
-                return Forbid();
-            }
-
-            UpdateExistingValues(resultModel, existing);
-
-            try
-            {
-                await _patientRepository.UpdateAsync(existing, cancellationToken);
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex.Message);
-                return BadRequest();
-            }
-
-            return NoContent();
+            await _patientRepository.DeleteAsync(id, cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex.Message);
+            return BadRequest();
         }
 
-        private static void UpdateExistingValues(PatientCreateOrUpdateModel newModel, PatientModel existing)
+        return NoContent();
+    }
+
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> UpdateAsync(
+        [FromRoute] int id,
+        [FromBody] PatientCreateOrUpdateModel resultModel,
+        CancellationToken cancellationToken)
+    {
+        if (id <= 0)
         {
-            existing.BithDate = newModel.BithDate;
+            return BadRequest();
         }
+
+        var existing = await _patientRepository.GetByIdAsync(id, cancellationToken);
+
+        if (existing == null)
+        {
+            return NotFound();
+        }
+
+        if (!HasPermission(existing.User))
+        {
+            return Forbid();
+        }
+
+        UpdateExistingValues(resultModel, existing);
+
+        try
+        {
+            await _patientRepository.UpdateAsync(existing, cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex.Message);
+            return BadRequest();
+        }
+
+        return NoContent();
+    }
+
+    public IActionResult GetByIdAsync(int id)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    private static void UpdateExistingValues(PatientCreateOrUpdateModel newModel, PatientModel existing)
+    {
+        existing.BithDate = newModel.BithDate;
     }
 }

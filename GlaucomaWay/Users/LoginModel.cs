@@ -1,9 +1,8 @@
-﻿namespace GlaucomaWay.Users
-{
-    public class LoginModel
-    {
-        public string Username { get; set; } = string.Empty;
+﻿namespace GlaucomaWay.Users;
 
-        public string Password { get; set; } = string.Empty;
-    }
+public class LoginModel
+{
+    public string Username { get; set; } = string.Empty;
+
+    public string Password { get; set; } = string.Empty;
 }

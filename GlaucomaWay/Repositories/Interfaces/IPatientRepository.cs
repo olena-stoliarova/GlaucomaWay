@@ -1,8 +1,7 @@
 ﻿using GlaucomaWay.Models;
 
-namespace GlaucomaWay.Repositories.Interfaces
+namespace GlaucomaWay.Repositories.Interfaces;
+
+public interface IPatientRepository : IGenericRepository<PatientModel>
 {
-    public interface IPatientRepository : IGenericRepository<PatientModel>
-    {
-    }
 }
