@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GlaucomaWay.Controllers;
 
-[ApiController]
+/*[ApiController]
 [Authorize]
 [Route("[controller]")]
 public class PatientController : ApiController
@@ -31,7 +31,7 @@ public class PatientController : ApiController
         _userManager = userManager;
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -86,7 +86,7 @@ public class PatientController : ApiController
                 patient.ToPatientModel(authenticatedUser.Id),
                 cancellationToken);
 
-            return CreatedAtAction(nameof(GetByIdAsync), new {id = result.Id}, result.Id);
+            return CreatedAtAction("GetByIdAsync", new {id = result.Id}, result.Id);
         }
         catch (DbUpdateException ex)
         {
@@ -186,4 +186,4 @@ public class PatientController : ApiController
     {
         existing.BithDate = newModel.BithDate;
     }
-}
+}*/
