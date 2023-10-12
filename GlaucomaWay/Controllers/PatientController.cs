@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GlaucomaWay.Controllers;
 
-/*[ApiController]
+[ApiController]
 [Authorize]
 [Route("[controller]")]
 public class PatientController : ApiController
@@ -177,13 +177,8 @@ public class PatientController : ApiController
         return NoContent();
     }
 
-    public IActionResult GetByIdAsync(int id)
-    {
-        throw new System.NotImplementedException();
-    }
-
     private static void UpdateExistingValues(PatientCreateOrUpdateModel newModel, PatientModel existing)
     {
         existing.BithDate = newModel.BithDate;
     }
-}*/
+}
