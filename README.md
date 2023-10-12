@@ -1,36 +1,33 @@
-# GlaucomaWay - Quality of Life Monitoring for Glaucoma Patients
+# GlaucomaWay - Empowering Glaucoma Patients with Quality of Life Monitoring
 
-## What is glaucoma?
-Glaucoma is a group of eye conditions that damage the optic nerve, the health of which is vital for good vision. 
-This damage is often caused by an abnormally high pressure in your eye.
+## About Glaucoma
+Glaucoma encompasses a range of eye conditions that damage the optic nerve, a crucial element in maintaining clear vision. Typically, this damage happens due to elevated pressure within the eye.
 
-Glaucoma is one of the leading causes of blindness for people over the age of 60. 
-It can occur at any age but is more common in older adults.
+Glaucoma ranks among the leading causes of blindness in individuals aged 60 and above. Although it can manifest at any age, it predominantly affects older adults. Its insidious progression often conceals noticeable vision changes until the condition reaches an advanced stage. Given that vision loss from glaucoma is irreversible, routine eye examinations, adherence to prescribed treatments, and vigilant quality of life monitoring are imperative.
 
-The effect is so gradual that you may not notice a change in vision until the condition is at an advanced stage. 
-Because vision loss due to glaucoma can't be recovered, it's important to have regular eye exams, follow treatment prescibed by you doctor and monitor the quality of life.
+## Introducing the VF-14 Questionnaire
+The VF-14 questionnaire, developed by Steinberg and colleagues, serves as a reliable index for evaluating visual function. Originally designed for patients undergoing cataract surgery, this instrument has demonstrated its utility in assessing the quality of life for individuals affected by conditions like cataracts, glaucoma, and corneal diseases. With its robust validity, reliability, and unidimensional structure, the VF-14 questionnaire is a valuable tool for glaucoma patients and those at risk of the condition.
 
-## What is VF-14 Questionnaire?
-The VF-14 was developed by Steinberg et al. It is an index of visual function that was designed to assess patients undergoing cataract surgery. 
-Its usefulness has been demonstrated in patients with cataracts, glaucoma, and corneal disease. 
-The VF-14 is a valid, reliable, and unidimensional questionnaire for use in a glaucoma patients and those with a risk of glaucoma. 
+## Purpose of this Project
+GlaucomaWay is dedicated to the meticulous recording, evaluation, and analysis of the quality of life experienced by individuals battling glaucoma. It's essential to clarify that this project does not serve as a medical tool or provide medical advice. Instead, it aims to automate the tracking and analysis of VF-14 questionnaire results, making it a valuable resource for medical practitioners and patients seeking to monitor their eye health.
 
-## What is this project for?
-This is a project to record, evaluate and analyze quality of life of patients with glaucoma. 
-It is not a medical tool and it cannot be used as a medical advice. 
-Its sole purpose is automation of VF-14 result tracking and analysis for medical practitioners or patients who want to monitor their own health.
-If you decide to use this tool for any purpose, you fully undertake all the responsibility for any sort of outcomes and possible damage.
+It's important to note that when deciding to utilize this tool for any purpose, users bear full responsibility for the outcomes and any potential risks.
 
-## How is personal information stored? Can third parties access my data?
-The tool is designed to be hosted on your machine or server. The developer(s) of the tool store no personal information.
-Any user of the tool is fully responsible for handling any personal/sensitive information in compliance with any law applicable.
+## Data Privacy and Security
+Rest assured, GlaucomaWay prioritizes your data privacy and security. The tool is intended to be hosted on your local machine or a secure server. The developers do not store any personal information. Users are responsible for handling any personal or sensitive data in accordance with applicable laws.
 
-If you are using GlaucomaWay as a patient, you are a sole manager of all your records and should operate using an Admin role.
-If you are using GlaucomaWay as a medical practitionner, you should manage the system using an Admin role and create a separate user account for every patient who is going to input their results.
+For Patients:
+- As a patient, you have complete control over your records and should operate with an Admin role.
+
+For Medical Practitioners:
+- Medical practitioners should manage the system using an Admin role and create separate user accounts for patients to input their results securely.
 
 ## Features
-The project is being developed. Detailed list of features and user guide will be added later.
+GlaucomaWay is a work in progress. A detailed list of features and a comprehensive user guide will be provided as the project continues to evolve.
 
 ## How to run
-Setup a database. From the project directory run the following command
+To run the GlaucomaWay project, follow these steps:
+
+- Set up a database.
+- From the project directory, execute the following command:
 `$ dotnet run`
