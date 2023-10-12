@@ -37,8 +37,7 @@ public class PatientController : ApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<PatientModel>> GetByIdAsync([FromRoute] int id,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<PatientModel>> GetByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         if (id <= 0)
         {
@@ -81,12 +80,22 @@ public class PatientController : ApiController
     {
         try
         {
+            if (HttpContext.User.Identity?.Name == null)
+            {
+                return NotFound();
+            }
+
             var authenticatedUser = await _userManager.FindByNameAsync(HttpContext.User.Identity?.Name);
+            if (authenticatedUser == null)
+            {
+                return NotFound();
+            }
+
             var result = await _patientRepository.CreateAsync(
                 patient.ToPatientModel(authenticatedUser.Id),
                 cancellationToken);
 
-            return CreatedAtAction("GetByIdAsync", new {id = result.Id}, result.Id);
+            return CreatedAtAction("GetByIdAsync", new { id = result.Id }, result.Id);
         }
         catch (DbUpdateException ex)
         {
